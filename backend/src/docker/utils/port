@@ -1,6 +1,7 @@
 #!/bin/sh
+image_name="vscode-server-$(head /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)"
 
-docker build --build-arg ADDITIONAL_PACKAGES="$2" -t vscode-server .
+docker build --build-arg ADDITIONAL_PACKAGES="$2" . -t $image_name -f src/docker/utils/dockerfile
 
 # Start from port 8080
 port=8080
@@ -20,4 +21,4 @@ done
 echo "Launching on port $port and mounting $1"
 
 # Run the Docker container with the available port
-docker run -p $port:8080 -v "$1:/home/coder" --privileged -d vscode-server
+docker run -p $port:8080 -v "$1:/home/coder" --privileged -d $image_name

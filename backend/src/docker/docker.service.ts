@@ -69,17 +69,23 @@ export class DockerService {
   }
 
   async createCodeInstance(container: CreateContainer) {
-    const process = exec(`./src/docker/utils/port $HOME/${container.filepath} ${container.package}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error executing the script: ${error}`);
-        return;
-      }
+    return new Promise((resolve, reject) => {
+      exec(`./src/docker/utils/port $HOME/${container.filepath} ${container.package}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing the script: ${error}`);
+          reject(error);
+          return;
+        }
 
-      console.log(`Script output:\n${stdout}`);
-      return stdout;
+        const outputLines = stdout.trim().split('\n');
+
+        const containerId = outputLines[outputLines.length - 1];
+
+        console.log(`Container created with ID: ${containerId}`);
+
+        resolve(containerId.slice(0, 10));
+      });
     });
-
-    return process;
   }
 
 }

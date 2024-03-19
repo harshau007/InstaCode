@@ -1,13 +1,9 @@
-# Use the official Ubuntu 20.04 image as the base
 FROM ubuntu:20.04
 
-# Install curl and other dependencies
 RUN apt-get update && apt-get install -y curl ca-certificates software-properties-common
 
-# Define a build argument for additional packages
 ARG ADDITIONAL_PACKAGES
 
-# Install additional packages if specified
 RUN if [ -n "$ADDITIONAL_PACKAGES" ]; then \
         case "$ADDITIONAL_PACKAGES" in \
             "nodelts") \
@@ -32,15 +28,12 @@ RUN if [ -n "$ADDITIONAL_PACKAGES" ]; then \
         esac; \
     fi
 
-# Install code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 COPY settings.json /root/.local/share/code-server/User/settings.json
 
-# Expose the port that code-server will run on
 EXPOSE 8080
 
-# Set the working directory
 WORKDIR /home/coder
 
 # Start code-server
