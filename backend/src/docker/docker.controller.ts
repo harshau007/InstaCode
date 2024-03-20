@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { DockerService } from './docker.service';
 import { CreateContainer } from './dto/CreateContainerDto';
 
@@ -34,7 +35,7 @@ export class DockerController {
     return await this.dockerService.getInfo(id);
   }
 
-  @Post('stop/:id')
+  @Post('container/stop/:id')
   async stopContainer(@Param('id') id: string) {
     return await this.dockerService.stopContainer(id);
   }
@@ -47,5 +48,20 @@ export class DockerController {
   @Post('container/create')
   async createContainer(@Body() createContainerDto: CreateContainer) {
     return await this.dockerService.createCodeInstance(createContainerDto);
+  }
+
+  @Post('container/start/:id')
+  async startContainer(@Param('id') id: string) {
+    return await this.dockerService.startContainer(id);
+  }
+
+  @Post('container/remove/:id')
+  async removeContainer(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.dockerService.removeContainer(id);
+    if (result.success) {
+      return res.status(200).json({ message: 'Container and image removed successfully' });
+    } else {
+      return res.status(500).json({ error: result.error });
+    }
   }
 }

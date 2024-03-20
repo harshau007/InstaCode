@@ -1,5 +1,13 @@
-#!/bin/sh
-image_name="vscode-server-$(head /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)"
+#!/bin/bash
+
+# Check if a name is provided as an argument
+if [ -n "$1" ]; then
+    container_name="$1"
+else
+    container_name="vscode-server-$(head /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)"
+fi
+
+image_name="$container_name-$(head /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)"
 
 docker build --build-arg ADDITIONAL_PACKAGES="$2" . -t $image_name -f src/docker/utils/dockerfile
 
@@ -11,14 +19,12 @@ is_port_in_use() {
     netstat -ltn | grep -q ":$1"
 }
 
-echo $1
-
 # Find an available port
 while is_port_in_use $port; do
     port=$((port+1))
 done
 
-echo "Launching on port $port and mounting $1"
+echo "Launching $container_name on port $port and mounting $3"
 
 # Run the Docker container with the available port
-docker run -p $port:8080 -v "$1:/home/coder" --privileged -d $image_name
+docker run --name "$container_name" -p $port:8080 -v "$3:/home/coder" --privileged -d $image_name

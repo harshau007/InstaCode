@@ -55,6 +55,11 @@ export class DockerService {
     return await container.stop();
   }
 
+  async startContainer(id: string) {
+    const container = this.docker.getContainer(id);
+    return await container.start();
+  }
+
   async containerURL() {
     const containerInfo = await this.docker.listContainers({ all: false });
     const info = []
@@ -70,7 +75,7 @@ export class DockerService {
 
   async createCodeInstance(container: CreateContainer) {
     return new Promise((resolve, reject) => {
-      exec(`./src/docker/utils/port $HOME/${container.filepath} ${container.package}`, (error, stdout, stderr) => {
+      exec(`./src/docker/utils/port ${container.name} ${container.package} $HOME/${container.filepath}`, (error, stdout, stderr) => {
         if (error) {
           console.error(`Error executing the script: ${error}`);
           reject(error);
@@ -88,5 +93,25 @@ export class DockerService {
     });
   }
 
+  async removeContainer(id: string) {
+    try {
+      const container = this.docker.getContainer(id);
+
+      await container.remove({ force: true });
+      console.log(`Container ${id} removed.`);
+
+      const containerInfo = await container.inspect();
+      const imageName = containerInfo.Image;
+
+      const image = this.docker.getImage(imageName);
+      // await image.remove({ force: true });
+      console.log(`Image ${imageName} removed.`);
+
+      return { success: true };
+    } catch (err) {
+      console.error(`Error removing container ${id} or associated image:`, err);
+      return { success: false, error: err.message };
+    }
+  }
 }
 
