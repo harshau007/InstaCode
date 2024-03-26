@@ -45,6 +45,11 @@ export class DockerController {
     return await this.dockerService.containerURL();
   }
 
+  @Get('container/url/:id')
+  async getDockerURLbyId(@Param('id') id: string) {
+    return await this.dockerService.getContainerURL(id);
+  }
+
   @Post('container/create')
   async createContainer(@Body() createContainerDto: CreateContainer) {
     return await this.dockerService.createCodeInstance(createContainerDto);

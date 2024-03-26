@@ -66,11 +66,25 @@ export class DockerService {
     for (const containerInfoItem of containerInfo) {
       info.push({
         "id" : containerInfoItem.Id.slice(0, 10),
-        "name" : containerInfoItem.Names[0],
+        "name" : containerInfoItem.Names[0].slice(1),
         "url" : "http://" + containerInfoItem.Ports[0].IP +":" + containerInfoItem.Ports[0].PublicPort
       });
     }
     return info;
+  }
+
+  async getContainerURL(id: string) {
+    const containerInfo = (await this.docker.listContainers({ all: false }))
+    const info = []
+    for (const containerInfoItem of containerInfo) {
+      if(containerInfoItem.Id.slice(0, 10).includes(id)) {
+        info.push({
+          "name" : containerInfoItem.Names[0].slice(1),
+          "url" : "http://" + containerInfoItem.Ports[0].IP +":" + containerInfoItem.Ports[0].PublicPort
+        });
+      }
+    }
+    return info[0];
   }
 
   async createCodeInstance(container: CreateContainer) {
